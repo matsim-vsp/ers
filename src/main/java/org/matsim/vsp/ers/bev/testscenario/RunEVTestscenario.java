@@ -55,7 +55,7 @@ public class RunEVTestscenario {
         config.transit().setUseTransit(false);
         config.transit().setUsingTransitInMobsim(false);
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        Function<Charger, ChargingStrategy> chargingStrategyFactory = charger -> new FixedSpeedChargingStrategy(charger.getPower() * 0.8);
+        Function<Charger, ChargingStrategy> chargingStrategyFactory = charger -> new FastThenSlowCharging(charger.getPower());
 
         VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
         driveEnergyConsumptionFactory.addEnergyConsumptionModel("smallCar", new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile()));
