@@ -59,6 +59,8 @@ public class RunEVTestscenario {
 
         VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
         driveEnergyConsumptionFactory.addEnergyConsumptionModel("smallCar", new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile()));
+        driveEnergyConsumptionFactory.addEnergyConsumptionModel("mediumCar", new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv").getFile()));
+        driveEnergyConsumptionFactory.addEnergyConsumptionModel("SUV", new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
         driveEnergyConsumptionFactory.addEnergyConsumptionModel("truck", new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile()));
 
         AuxEnergyConsumption.Factory dummy = electricVehicle -> period -> 0;

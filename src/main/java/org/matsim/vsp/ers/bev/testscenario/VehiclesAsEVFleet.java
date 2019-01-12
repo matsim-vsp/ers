@@ -29,11 +29,13 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.vsp.ev.EvUnitConversions;
 import org.matsim.vsp.ev.data.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 
 public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
@@ -43,13 +45,22 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
 
     private ElectricFleetImpl electricFleet;
 
-    private String truckType = "truck";
-    private double truckCapacity = 800 * EvUnitConversions.J_PER_kWh;
-    private List<String> truckChargers = Collections.singletonList("truck");
+    private final String truckType = "truck";
+    private final double truckCapacity = 1000 * EvUnitConversions.J_PER_kWh;
+    private final List<String> truckChargers = Collections.singletonList("truck");
 
-    private String carType = "smallCar";
-    private double carCapacity = 60 * EvUnitConversions.J_PER_kWh;
-    private List<String> carChargers = Collections.singletonList("fast");
+    private final String smallcarType = "smallCar";
+    private final double smallCarCapacity = 40 * EvUnitConversions.J_PER_kWh;
+
+    private final String mediumcarType = "mediumCar";
+    private final double mediumCarCapacity = 60 * EvUnitConversions.J_PER_kWh;
+
+    private final String suvcarType = "SUV";
+    private final double suvCarCapacity = 100 * EvUnitConversions.J_PER_kWh;
+
+    private final List<String> carChargers = Collections.singletonList("fast");
+
+    private final Random random = MatsimRandom.getRandom();
 
     @Override
     public ElectricFleet get() {
@@ -72,7 +83,20 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
     }
 
     private void generateCar(Id<Person> id) {
-        generateAndAddVehicle(id, TransportMode.car, carCapacity, carCapacity, carType, carChargers);
+        double r = random.nextDouble();
+        double capacity;
+        String type;
+        if (r < 0.5) {
+            type = mediumcarType;
+            capacity = mediumCarCapacity;
+        } else if (r < 0.85) {
+            type = suvcarType;
+            capacity = suvCarCapacity;
+        } else {
+            type = smallcarType;
+            capacity = smallCarCapacity;
+        }
+        generateAndAddVehicle(id, TransportMode.car, capacity, capacity, type, carChargers);
     }
 
     private void generateAndAddVehicle(Id<Person> id, String mode, double batteryCapa, double soc, String vehicleType, List<String> chargerTypes) {
