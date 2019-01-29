@@ -35,8 +35,9 @@ import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.vsp.ev.EvUnitConversions;
+import org.matsim.vsp.ev.EvUnits;
 import org.matsim.vsp.ev.data.Charger;
+
 import org.matsim.vsp.ev.data.ChargerImpl;
 import org.matsim.vsp.ev.data.file.ChargerWriter;
 
@@ -74,9 +75,9 @@ public class GenerateChargersFromGasStations {
             double x = Double.parseDouble(jo.get("lon").toString());
             Coord c = ct.transform(new Coord(x, y));
             Link l = NetworkUtils.getNearestLink(filteredNet, c);
-            Charger fastCharger = new ChargerImpl(Id.create(l.getId().toString() + "fast", Charger.class), 120 * EvUnitConversions.W_PER_kW, 10, l, c, "fast");
+            Charger fastCharger = new ChargerImpl(Id.create(l.getId().toString() + "fast", Charger.class), 120 * EvUnits.W_PER_kW, 10, l, c, "fast");
             chargers.add(fastCharger);
-            Charger truckCharger = new ChargerImpl(Id.create(l.getId().toString() + "truck", Charger.class), 400 * EvUnitConversions.W_PER_kW, 2, l, c, "truck");
+            Charger truckCharger = new ChargerImpl(Id.create(l.getId().toString() + "truck", Charger.class), 400 * EvUnits.W_PER_kW, 2, l, c, "truck");
             chargers.add(truckCharger);
         }
         new ChargerWriter(chargers).write(folder + "chargers_gasstations.xml");

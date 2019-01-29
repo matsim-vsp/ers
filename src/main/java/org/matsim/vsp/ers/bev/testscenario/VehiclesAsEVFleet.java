@@ -30,7 +30,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.vsp.ev.EvUnitConversions;
+import org.matsim.vsp.ev.EvUnits;
 import org.matsim.vsp.ev.data.*;
 
 import java.util.Collections;
@@ -46,17 +46,17 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
     private ElectricFleetImpl electricFleet;
 
     private final String truckType = "truck";
-    private final double truckCapacity = 1000 * EvUnitConversions.J_PER_kWh;
+    private final double truckCapacity = 1000 * EvUnits.J_PER_kWh;
     private final List<String> truckChargers = Collections.singletonList("truck");
 
     private final String smallcarType = "smallCar";
-    private final double smallCarCapacity = 40 * EvUnitConversions.J_PER_kWh;
+    private final double smallCarCapacity = 40 * EvUnits.J_PER_kWh;
 
     private final String mediumcarType = "mediumCar";
-    private final double mediumCarCapacity = 60 * EvUnitConversions.J_PER_kWh;
+    private final double mediumCarCapacity = 60 * EvUnits.J_PER_kWh;
 
     private final String suvcarType = "SUV";
-    private final double suvCarCapacity = 100 * EvUnitConversions.J_PER_kWh;
+    private final double suvCarCapacity = 100 * EvUnits.J_PER_kWh;
 
     private final List<String> carChargers = Collections.singletonList("fast");
 

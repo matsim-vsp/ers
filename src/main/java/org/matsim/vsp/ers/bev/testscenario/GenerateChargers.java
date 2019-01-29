@@ -25,7 +25,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.vsp.ev.EvUnitConversions;
+import org.matsim.vsp.ev.EvUnits;
 import org.matsim.vsp.ev.data.*;
 import org.matsim.vsp.ev.data.file.ChargerWriter;
 import org.matsim.vsp.ev.data.file.ElectricVehicleWriter;
@@ -44,10 +44,10 @@ public class GenerateChargers {
         new MatsimNetworkReader(network).readFile(folder + "network-osm.xml.gz");
 
 
-        Charger charger = new ChargerImpl(Id.create(113273 + "charger", Charger.class), EvUnitConversions.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "fast");
-        Charger charger2 = new ChargerImpl(Id.create(74836 + "charger", Charger.class), EvUnitConversions.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "fast");
-        Charger chargert = new ChargerImpl(Id.create(113273 + "truckcharger", Charger.class), EvUnitConversions.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "truck");
-        Charger chargert2 = new ChargerImpl(Id.create(74836 + "truckcharger", Charger.class), EvUnitConversions.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "truck");
+        Charger charger = new ChargerImpl(Id.create(113273 + "charger", Charger.class), EvUnits.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "fast");
+        Charger charger2 = new ChargerImpl(Id.create(74836 + "charger", Charger.class), EvUnits.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "fast");
+        Charger chargert = new ChargerImpl(Id.create(113273 + "truckcharger", Charger.class), EvUnits.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "truck");
+        Charger chargert2 = new ChargerImpl(Id.create(74836 + "truckcharger", Charger.class), EvUnits.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "truck");
         List<Charger> chargers = new ArrayList<>();
         chargers.add(charger);
         chargers.add(charger2);
@@ -55,7 +55,7 @@ public class GenerateChargers {
         chargers.add(chargert2);
         new ChargerWriter(chargers).write(folder + "test-chargers.xml");
         List<String> chargingTypes = Arrays.asList(new String[]{"fast", "slow"});
-        ElectricVehicle ev = new ElectricVehicleImpl(Id.create("testEV1", ElectricVehicle.class), new BatteryImpl(30 * EvUnitConversions.J_PER_kWh, 30 * EvUnitConversions.J_PER_kWh), chargingTypes, "car");
+        ElectricVehicle ev = new ElectricVehicleImpl(Id.create("testEV1", ElectricVehicle.class), new BatteryImpl(30 * EvUnits.J_PER_kWh, 30 * EvUnits.J_PER_kWh), chargingTypes, "car");
         new ElectricVehicleWriter(Collections.singletonList(ev)).write(folder + "test_evs.xml");
 
     }
