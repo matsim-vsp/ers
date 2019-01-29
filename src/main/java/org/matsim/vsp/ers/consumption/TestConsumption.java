@@ -25,8 +25,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.ev.ev.data.file.LTHConsumptionModelReader;
-import org.matsim.contrib.ev.ev.discharging.LTHDriveEnergyConsumption;
+import org.matsim.contrib.ev.data.file.LTHConsumptionModelReader;
+import org.matsim.contrib.ev.discharging.LTHDriveEnergyConsumption;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.vehicles.VehicleType;
 
