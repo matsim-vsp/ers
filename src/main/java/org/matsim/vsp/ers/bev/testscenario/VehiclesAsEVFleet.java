@@ -29,9 +29,9 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.contrib.ev.ev.EvUnits;
+import org.matsim.contrib.ev.ev.data.*;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.vsp.ev.EvUnits;
-import org.matsim.vsp.ev.data.*;
 
 import java.util.Collections;
 import java.util.List;

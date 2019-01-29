@@ -23,12 +23,12 @@ package org.matsim.vsp.ers.bev.testscenario;/*
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.ev.ev.EvUnits;
+import org.matsim.contrib.ev.ev.data.*;
+import org.matsim.contrib.ev.ev.data.file.ChargerWriter;
+import org.matsim.contrib.ev.ev.data.file.ElectricVehicleWriter;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.vsp.ev.EvUnits;
-import org.matsim.vsp.ev.data.*;
-import org.matsim.vsp.ev.data.file.ChargerWriter;
-import org.matsim.vsp.ev.data.file.ElectricVehicleWriter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

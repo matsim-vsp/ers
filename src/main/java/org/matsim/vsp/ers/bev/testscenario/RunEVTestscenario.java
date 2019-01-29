@@ -24,6 +24,16 @@ package org.matsim.vsp.ers.bev.testscenario;/*
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.contrib.ev.ev.EvConfigGroup;
+import org.matsim.contrib.ev.ev.EvModule;
+import org.matsim.contrib.ev.ev.charging.*;
+import org.matsim.contrib.ev.ev.data.Charger;
+import org.matsim.contrib.ev.ev.data.ElectricFleet;
+import org.matsim.contrib.ev.ev.data.file.LTHConsumptionModelReader;
+import org.matsim.contrib.ev.ev.discharging.AuxEnergyConsumption;
+import org.matsim.contrib.ev.ev.discharging.DriveEnergyConsumption;
+import org.matsim.contrib.ev.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
+import org.matsim.contrib.ev.ev.routing.EVNetworkRoutingProvider;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
@@ -33,16 +43,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vsp.ers.scoring.AgentSpecificASCScoring;
-import org.matsim.vsp.ev.EvConfigGroup;
-import org.matsim.vsp.ev.EvModule;
-import org.matsim.vsp.ev.charging.*;
-import org.matsim.vsp.ev.data.Charger;
-import org.matsim.vsp.ev.data.ElectricFleet;
-import org.matsim.vsp.ev.data.file.LTHConsumptionModelReader;
-import org.matsim.vsp.ev.discharging.AuxEnergyConsumption;
-import org.matsim.vsp.ev.discharging.DriveEnergyConsumption;
-import org.matsim.vsp.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
-import org.matsim.vsp.ev.routing.EVNetworkRoutingProvider;
 
 import java.util.function.Function;
 

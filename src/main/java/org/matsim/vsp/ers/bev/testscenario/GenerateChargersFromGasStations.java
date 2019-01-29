@@ -30,16 +30,15 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.ev.ev.EvUnits;
+import org.matsim.contrib.ev.ev.data.Charger;
+import org.matsim.contrib.ev.ev.data.ChargerImpl;
+import org.matsim.contrib.ev.ev.data.file.ChargerWriter;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-import org.matsim.vsp.ev.EvUnits;
-import org.matsim.vsp.ev.data.Charger;
-
-import org.matsim.vsp.ev.data.ChargerImpl;
-import org.matsim.vsp.ev.data.file.ChargerWriter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

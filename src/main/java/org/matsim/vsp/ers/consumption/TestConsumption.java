@@ -25,10 +25,10 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.ev.ev.data.file.LTHConsumptionModelReader;
+import org.matsim.contrib.ev.ev.discharging.LTHDriveEnergyConsumption;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.vehicles.VehicleType;
-import org.matsim.vsp.ev.data.file.LTHConsumptionModelReader;
-import org.matsim.vsp.ev.discharging.LTHDriveEnergyConsumption;
 
 public class TestConsumption {
     public static void main(String[] args) {
