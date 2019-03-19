@@ -63,7 +63,7 @@ public class RunEVTestscenario {
         driveEnergyConsumptionFactory.addEnergyConsumptionModel("SUV", new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
         driveEnergyConsumptionFactory.addEnergyConsumptionModel("truck", new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile()));
 
-        AuxEnergyConsumption.Factory dummy = electricVehicle -> period -> 0;
+        AuxEnergyConsumption.Factory dummy = electricVehicle -> (period, timeOfDay) -> 0;
         Controler controler = new Controler(scenario);
         controler.addOverridingModule(new EvModule());
 
