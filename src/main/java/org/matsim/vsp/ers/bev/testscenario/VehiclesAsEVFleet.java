@@ -21,6 +21,7 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 15.10.2018
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.matsim.api.core.v01.Id;
@@ -30,24 +31,22 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.ev.EvUnits;
-import org.matsim.contrib.ev.data.*;
+import org.matsim.contrib.ev.fleet.*;
 import org.matsim.core.gbl.MatsimRandom;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 
-public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
+public class VehiclesAsEVFleet implements Provider<ElectricFleetSpecification> {
 
     @Inject
     Population population;
 
-    private ElectricFleetImpl electricFleet;
+    private ElectricFleetSpecification electricFleet;
 
     private final String truckType = "truck";
     private final double truckCapacity = 1000 * EvUnits.J_PER_kWh;
-    private final List<String> truckChargers = Collections.singletonList("truck");
+    private final ImmutableList<String> truckChargers = ImmutableList.<String>builder().add("truck").build();
 
     private final String smallcarType = "smallCar";
     private final double smallCarCapacity = 40 * EvUnits.J_PER_kWh;
@@ -58,13 +57,13 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
     private final String suvcarType = "SUV";
     private final double suvCarCapacity = 100 * EvUnits.J_PER_kWh;
 
-    private final List<String> carChargers = Collections.singletonList("fast");
+    private final ImmutableList<String> carChargers = ImmutableList.<String>builder().add("fast").build();
 
     private final Random random = MatsimRandom.getRandom();
 
     @Override
-    public ElectricFleet get() {
-        electricFleet = new ElectricFleetImpl();
+    public ElectricFleetSpecification get() {
+        electricFleet = new ElectricFleetSpecificationImpl();
         for (Person person : population.getPersons().values()) {
             Plan plan = person.getSelectedPlan();
             plan.getPlanElements().stream().filter(Leg.class::isInstance).forEach(pl -> {
@@ -99,11 +98,11 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleet> {
         generateAndAddVehicle(id, TransportMode.car, capacity, capacity, type, carChargers);
     }
 
-    private void generateAndAddVehicle(Id<Person> id, String mode, double batteryCapa, double soc, String vehicleType, List<String> chargerTypes) {
+    private void generateAndAddVehicle(Id<Person> id, String mode, double batteryCapa, double soc, String vehicleType, ImmutableList<String> chargerTypes) {
         Id<ElectricVehicle> evId = mode.equals(TransportMode.car) ? Id.create(id, ElectricVehicle.class) : Id.create(id.toString() + "_" + mode, ElectricVehicle.class);
-        if (!electricFleet.getElectricVehicles().containsKey(evId)) {
-            ElectricVehicle ev = new ElectricVehicleImpl(evId, new BatteryImpl(batteryCapa, soc), chargerTypes, vehicleType);
-            electricFleet.addElectricVehicle(ev);
+        if (!electricFleet.getVehicleSpecifications().containsKey(evId)) {
+            ElectricVehicleSpecification ev = ImmutableElectricVehicleSpecification.newBuilder().id(evId).batteryCapacity(batteryCapa).initialSoc(soc).chargerTypes(chargerTypes).vehicleType(vehicleType).build();
+            electricFleet.addVehicleSpecification(ev);
         }
     }
 

@@ -28,11 +28,11 @@ import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
 import org.matsim.contrib.ev.charging.*;
 import org.matsim.contrib.ev.data.Charger;
-import org.matsim.contrib.ev.data.ElectricFleet;
 import org.matsim.contrib.ev.data.file.LTHConsumptionModelReader;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
+import org.matsim.contrib.ev.fleet.ElectricFleetSpecification;
 import org.matsim.contrib.ev.routing.EVNetworkRoutingProvider;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
@@ -70,7 +70,7 @@ public class RunEVTestscenario {
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                bind(ElectricFleet.class).toProvider(VehiclesAsEVFleet.class).asEagerSingleton();
+                bind(ElectricFleetSpecification.class).toProvider(VehiclesAsEVFleet.class).asEagerSingleton();
                 bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
                 bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
                 bind(VehicleChargingHandler.class).asEagerSingleton();

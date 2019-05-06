@@ -21,17 +21,21 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 09.10.2018
  */
 
+import com.google.common.collect.ImmutableList;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.ev.EvUnits;
-import org.matsim.contrib.ev.data.*;
+import org.matsim.contrib.ev.data.Charger;
+import org.matsim.contrib.ev.data.ChargerImpl;
 import org.matsim.contrib.ev.data.file.ChargerWriter;
-import org.matsim.contrib.ev.data.file.ElectricVehicleWriter;
+import org.matsim.contrib.ev.fleet.ElectricFleetWriter;
+import org.matsim.contrib.ev.fleet.ElectricVehicle;
+import org.matsim.contrib.ev.fleet.ElectricVehicleSpecification;
+import org.matsim.contrib.ev.fleet.ImmutableElectricVehicleSpecification;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,9 +58,9 @@ public class GenerateChargers {
         chargers.add(chargert);
         chargers.add(chargert2);
         new ChargerWriter(chargers).write(folder + "test-chargers.xml");
-        List<String> chargingTypes = Arrays.asList(new String[]{"fast", "slow"});
-        ElectricVehicle ev = new ElectricVehicleImpl(Id.create("testEV1", ElectricVehicle.class), new BatteryImpl(30 * EvUnits.J_PER_kWh, 30 * EvUnits.J_PER_kWh), chargingTypes, "car");
-        new ElectricVehicleWriter(Collections.singletonList(ev)).write(folder + "test_evs.xml");
+        ImmutableList<String> chargingTypes = ImmutableList.<String>builder().add("fast").add("slow").build();
+        ElectricVehicleSpecification ev = ImmutableElectricVehicleSpecification.newBuilder().id(Id.create("testEV1", ElectricVehicle.class)).batteryCapacity(30 * EvUnits.J_PER_kWh).initialSoc(30 * EvUnits.J_PER_kWh).chargerTypes(chargingTypes).vehicleType("car").build();
+        new ElectricFleetWriter(Collections.singletonList(ev).stream()).write(folder + "test_evs.xml");
 
     }
 }
