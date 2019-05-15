@@ -26,14 +26,14 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.ev.data.file.LTHConsumptionModelReader;
-import org.matsim.contrib.ev.discharging.LTHDriveEnergyConsumption;
+import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.vehicles.VehicleType;
 
 public class TestConsumption {
     public static void main(String[] args) {
         String filename = "D:/ers/energyconsumption/CityCarMap.csv";
-        LTHDriveEnergyConsumption c = new LTHConsumptionModelReader(Id.create("a", VehicleType.class)).readFile(filename);
+        DriveEnergyConsumption c = new LTHConsumptionModelReader(Id.create("a", VehicleType.class)).readFile(filename).create(null);
         Network n = NetworkUtils.createNetwork();
         Node n1 = NetworkUtils.createNode(Id.createNodeId("1"));
         Node n2 = NetworkUtils.createNode(Id.createNodeId("2"));
