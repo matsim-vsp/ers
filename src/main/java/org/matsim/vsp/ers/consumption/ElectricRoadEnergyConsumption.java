@@ -22,22 +22,78 @@ package org.matsim.vsp.ers.consumption;/*
  */
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.ev.charging.FastThenSlowCharging;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
-import org.matsim.contrib.ev.discharging.LTHDriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
+import org.matsim.core.utils.misc.Time;
+import org.matsim.vsp.ers.stats.ERSMobsimListener;
+
+import java.util.function.Predicate;
 
 public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
-    private LTHDriveEnergyConsumption delegate;
+    public static String ER_LINK_POWER = "ersPower";
+    private final Predicate<ElectricVehicle> wantsToCharge;
+
+    private final DriveEnergyConsumption delegate;
+
     private ElectricVehicle ev;
 
-    public ElectricRoadEnergyConsumption(LTHDriveEnergyConsumption delegate) {
+    public static class Factory implements DriveEnergyConsumption.Factory {
+
+        private final Predicate<ElectricVehicle> wantsToCharge;
+        private final DriveEnergyConsumption.Factory delegateFactory;
+
+        public Factory(Predicate<ElectricVehicle> wantsToCharge, DriveEnergyConsumption.Factory delegateFactory) {
+            this.wantsToCharge = wantsToCharge;
+            this.delegateFactory = delegateFactory;
+        }
+
+        @Override
+        public DriveEnergyConsumption create(ElectricVehicle electricVehicle) {
+            return new ElectricRoadEnergyConsumption(delegateFactory.create(electricVehicle), wantsToCharge);
+        }
+    }
+
+
+    private ElectricRoadEnergyConsumption(DriveEnergyConsumption delegate, Predicate<ElectricVehicle> wantsToCharge) {
         this.delegate = delegate;
+        this.wantsToCharge = wantsToCharge;
     }
 
     @Override
     public double calcEnergyConsumption(Link link, double travelTime) {
-        return 0;
+        return calcEnergyConsumption(link, travelTime, Time.getUndefinedTime());
     }
 
+    @Override
+    public double calcEnergyConsumption(Link link, double travelTime, double timeOfDay) {
+        double consumption = delegate.calcEnergyConsumption(link, travelTime);
+        double maxChargingPower = getElectricRoadChargingPower(link);
+        if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
+            double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
+            consumption += charge;
+            if (!Time.isUndefinedTime(timeOfDay)) {
+                ((ERSMobsimListener.ERSLinkStats) link.getAttributes().getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(timeOfDay, charge);
+
+            }
+        }
+        return consumption;
+    }
+
+    private double calculateCharge(double consumption, Link link, double travelTime, double maxChargingPower) {
+        double charge = new FastThenSlowCharging(maxChargingPower).calcEnergyCharge(ev, travelTime);
+        //TODO: Consider a also the consumed energy to calculate re-charge
+        return charge;
+    }
+
+    private double getElectricRoadChargingPower(Link link) {
+        if (link.getAttributes().getAsMap().containsKey(ER_LINK_POWER)) {
+            return (double) link.getAttributes().getAttribute(ER_LINK_POWER);
+        } else
+            return 0.0;
+    }
+
+
 }
+
