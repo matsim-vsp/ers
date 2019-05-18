@@ -22,6 +22,7 @@ package org.matsim.vsp.ers.consumption;/*
  */
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.charging.FastThenSlowCharging;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
@@ -32,7 +33,7 @@ import java.util.function.Predicate;
 
 public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
-    public static String ER_LINK_POWER = "ersPower";
+    public static String ER_LINK_POWER = "ersPower_kW";
     private final Predicate<ElectricVehicle> wantsToCharge;
 
     private final DriveEnergyConsumption delegate;
@@ -62,13 +63,8 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
     }
 
     @Override
-    public double calcEnergyConsumption(Link link, double travelTime) {
-        return calcEnergyConsumption(link, travelTime, Time.getUndefinedTime());
-    }
-
-    @Override
     public double calcEnergyConsumption(Link link, double travelTime, double timeOfDay) {
-        double consumption = delegate.calcEnergyConsumption(link, travelTime);
+        double consumption = delegate.calcEnergyConsumption(link, travelTime, timeOfDay);
         double maxChargingPower = getElectricRoadChargingPower(link);
         if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
             double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
@@ -89,7 +85,7 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
     private double getElectricRoadChargingPower(Link link) {
         if (link.getAttributes().getAsMap().containsKey(ER_LINK_POWER)) {
-            return (double) link.getAttributes().getAttribute(ER_LINK_POWER);
+            return EvUnits.kW_to_W((double) link.getAttributes().getAttribute(ER_LINK_POWER));
         } else
             return 0.0;
     }
