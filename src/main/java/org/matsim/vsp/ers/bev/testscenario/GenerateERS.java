@@ -37,7 +37,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class GenerateERS {
 
-    public static final String SWEDENSHAPE = "D:/ers/sweden-model/commuters/sweden_oneshape.shp";
+    public static final String SWEDENSHAPE = "D:/ers/sweden-model/commuters/ers.shp";
     public static final String SWEDENNET = "D:/ers/scenario/network-osm.xml.gz";
     public static final String SWEDENNET_ERS = "D:/ers/scenario/network-osm-ers.xml.gz";
     public static final String SWEDENNET_ERS_only = "D:/ers/scenario/network-osm-ers-only.xml.gz";
@@ -50,7 +50,7 @@ public class GenerateERS {
         network.getLinks().values().stream().
                 filter(l -> polygon.contains(MGC.coord2Point(((Link) l).getCoord()))).
 //                filter(l->String.valueOf(l.getAttributes().getAttribute("type")).equals("motorway")).
-        filter(l -> l.getFreespeed() > 110 / 3.6 && l.getNumberOfLanes() > 1).
+        filter(l -> (l.getFreespeed() > 80 / 3.6 && l.getNumberOfLanes() > 1) || (l.getFreespeed() > 110 / 3.6)).
                 forEach(l -> l.getAttributes().putAttribute(ElectricRoadEnergyConsumption.ER_LINK_POWER, 100.0));
 
         NetworkFilterManager networkFilterManager = new NetworkFilterManager(network);

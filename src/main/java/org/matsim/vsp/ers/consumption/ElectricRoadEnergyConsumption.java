@@ -38,7 +38,7 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
     private final DriveEnergyConsumption delegate;
 
-    private ElectricVehicle ev;
+    private final ElectricVehicle ev;
 
     public static class Factory implements DriveEnergyConsumption.Factory {
 
@@ -52,14 +52,15 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
         @Override
         public DriveEnergyConsumption create(ElectricVehicle electricVehicle) {
-            return new ElectricRoadEnergyConsumption(delegateFactory.create(electricVehicle), wantsToCharge);
+            return new ElectricRoadEnergyConsumption(delegateFactory.create(electricVehicle), wantsToCharge, electricVehicle);
         }
     }
 
 
-    private ElectricRoadEnergyConsumption(DriveEnergyConsumption delegate, Predicate<ElectricVehicle> wantsToCharge) {
+    private ElectricRoadEnergyConsumption(DriveEnergyConsumption delegate, Predicate<ElectricVehicle> wantsToCharge, ElectricVehicle electricVehicle) {
         this.delegate = delegate;
         this.wantsToCharge = wantsToCharge;
+        this.ev = electricVehicle;
     }
 
     @Override
@@ -68,7 +69,9 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
         double maxChargingPower = getElectricRoadChargingPower(link);
         if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
             double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
-            consumption += charge;
+            charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
+            ev.getBattery().charge(charge);
+
             if (!Time.isUndefinedTime(timeOfDay)) {
                 ((ERSMobsimListener.ERSLinkStats) link.getAttributes().getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(timeOfDay, charge);
 
