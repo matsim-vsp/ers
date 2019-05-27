@@ -21,6 +21,8 @@ package org.matsim.vsp.ers.consumption;/*
  * created by jbischoff, 15.05.2019
  */
 
+import java.util.function.Predicate;
+
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.charging.FastThenSlowCharging;
@@ -28,8 +30,6 @@ import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.vsp.ers.stats.ERSMobsimListener;
-
-import java.util.function.Predicate;
 
 public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
@@ -64,16 +64,18 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
     }
 
     @Override
-    public double calcEnergyConsumption(Link link, double travelTime, double timeOfDay) {
-        double consumption = delegate.calcEnergyConsumption(link, travelTime, timeOfDay);
+	public double calcEnergyConsumption(Link link, double travelTime, double linkLeaveTime) {
+		double consumption = delegate.calcEnergyConsumption(link, travelTime, linkLeaveTime);
         double maxChargingPower = getElectricRoadChargingPower(link);
         if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
             double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
             charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
             ev.getBattery().charge(charge);
 
-            if (!Time.isUndefinedTime(timeOfDay)) {
-                ((ERSMobsimListener.ERSLinkStats) link.getAttributes().getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(timeOfDay, charge);
+			if (!Time.isUndefinedTime(linkLeaveTime)) {
+				((ERSMobsimListener.ERSLinkStats)link.getAttributes()
+						.getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(linkLeaveTime,
+						charge);
 
             }
         }
