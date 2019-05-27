@@ -64,17 +64,17 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
     }
 
     @Override
-	public double calcEnergyConsumption(Link link, double travelTime, double linkLeaveTime) {
-		double consumption = delegate.calcEnergyConsumption(link, travelTime, linkLeaveTime);
+    public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
+        double consumption = delegate.calcEnergyConsumption(link, travelTime, linkEnterTime);
         double maxChargingPower = getElectricRoadChargingPower(link);
         if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
             double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
             charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
             ev.getBattery().charge(charge);
 
-			if (!Time.isUndefinedTime(linkLeaveTime)) {
+            if (!Time.isUndefinedTime(linkEnterTime)) {
 				((ERSMobsimListener.ERSLinkStats)link.getAttributes()
-						.getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(linkLeaveTime,
+                        .getAttribute(ERSMobsimListener.ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergy(linkEnterTime,
 						charge);
 
             }
