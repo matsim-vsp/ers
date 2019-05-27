@@ -21,12 +21,18 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 09.10.2018
  */
 
+import java.util.function.Function;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
-import org.matsim.contrib.ev.charging.*;
+import org.matsim.contrib.ev.charging.ChargingLogic;
+import org.matsim.contrib.ev.charging.ChargingStrategy;
+import org.matsim.contrib.ev.charging.ChargingWithQueueingAndAssignmentLogic;
+import org.matsim.contrib.ev.charging.FastThenSlowCharging;
+import org.matsim.contrib.ev.charging.VehicleChargingHandler;
 import org.matsim.contrib.ev.data.Charger;
 import org.matsim.contrib.ev.data.file.LTHConsumptionModelReader;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
@@ -43,8 +49,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vsp.ers.scoring.AgentSpecificASCScoring;
-
-import java.util.function.Function;
 
 public class RunEVTestscenario {
 
@@ -63,7 +67,7 @@ public class RunEVTestscenario {
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("SUV", new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck", new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile()));
 
-        AuxEnergyConsumption.Factory dummy = electricVehicle -> (period, timeOfDay) -> 0;
+        AuxEnergyConsumption.Factory dummy = electricVehicle -> (timeOfDay, period) -> 0;
         Controler controler = new Controler(scenario);
         controler.addOverridingModule(new EvModule());
 
