@@ -21,6 +21,12 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 12.10.2018
  */
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,20 +37,14 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.ev.EvUnits;
-import org.matsim.contrib.ev.data.Charger;
-import org.matsim.contrib.ev.data.ChargerImpl;
 import org.matsim.contrib.ev.data.file.ChargerWriter;
+import org.matsim.contrib.ev.infrastructure.Charger;
+import org.matsim.contrib.ev.infrastructure.ChargerImpl;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GenerateChargersFromGasStations {
 
