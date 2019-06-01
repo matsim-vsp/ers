@@ -33,8 +33,9 @@ import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.fleet.ElectricVehicleSpecification;
 import org.matsim.contrib.ev.fleet.ImmutableElectricVehicleSpecification;
 import org.matsim.contrib.ev.infrastructure.Charger;
-import org.matsim.contrib.ev.infrastructure.ChargerImpl;
+import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
 import org.matsim.contrib.ev.infrastructure.ChargerWriter;
+import org.matsim.contrib.ev.infrastructure.ImmutableChargerSpecification;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 
@@ -42,26 +43,57 @@ import com.google.common.collect.ImmutableList;
 
 public class GenerateChargers {
 
-    public static void main(String[] args) {
-        String folder = "D:/ers/ev-test/";
+	public static void main(String[] args) {
+		String folder = "D:/ers/ev-test/";
 
-        Network network = NetworkUtils.createNetwork();
-        new MatsimNetworkReader(network).readFile(folder + "network-osm.xml.gz");
+		Network network = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(network).readFile(folder + "network-osm.xml.gz");
 
+		ChargerSpecification charger = ImmutableChargerSpecification.newBuilder()
+				.id(Id.create(113273 + "charger", Charger.class))
+				.maxPower(EvUnits.W_PER_kW * 50)
+				.plugCount(2)
+				.linkId(Id.createLinkId(113273))
+				.chargerType("fast")
+				.build();
+		ChargerSpecification charger2 = ImmutableChargerSpecification.newBuilder()
+				.id(Id.create(74836 + "charger", Charger.class))
+				.maxPower(EvUnits.W_PER_kW * 50)
+				.plugCount(2)
+				.linkId(Id.createLinkId(74836))
+				.chargerType("fast")
+				.build();
 
-        Charger charger = new ChargerImpl(Id.create(113273 + "charger", Charger.class), EvUnits.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "fast");
-        Charger charger2 = new ChargerImpl(Id.create(74836 + "charger", Charger.class), EvUnits.W_PER_kW * 50, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "fast");
-        Charger chargert = new ChargerImpl(Id.create(113273 + "truckcharger", Charger.class), EvUnits.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(113273)), network.getLinks().get(Id.createLinkId(113273)).getCoord(), "truck");
-        Charger chargert2 = new ChargerImpl(Id.create(74836 + "truckcharger", Charger.class), EvUnits.W_PER_kW * 200, 2, network.getLinks().get(Id.createLinkId(74836)), network.getLinks().get(Id.createLinkId(74836)).getCoord(), "truck");
-        List<Charger> chargers = new ArrayList<>();
-        chargers.add(charger);
-        chargers.add(charger2);
-        chargers.add(chargert);
-        chargers.add(chargert2);
-        new ChargerWriter(chargers).write(folder + "test-chargers.xml");
-        ImmutableList<String> chargingTypes = ImmutableList.<String>builder().add("fast").add("slow").build();
-        ElectricVehicleSpecification ev = ImmutableElectricVehicleSpecification.newBuilder().id(Id.create("testEV1", ElectricVehicle.class)).batteryCapacity(30 * EvUnits.J_PER_kWh).initialSoc(30 * EvUnits.J_PER_kWh).chargerTypes(chargingTypes).vehicleType("car").build();
-        new ElectricFleetWriter(Collections.singletonList(ev).stream()).write(folder + "test_evs.xml");
+		ChargerSpecification chargert = ImmutableChargerSpecification.newBuilder()
+				.id(Id.create(113273 + "truckcharger", Charger.class))
+				.maxPower(EvUnits.W_PER_kW * 200)
+				.plugCount(2)
+				.linkId(Id.createLinkId(113273))
+				.chargerType("truck")
+				.build();
+		ChargerSpecification chargert2 = ImmutableChargerSpecification.newBuilder()
+				.id(Id.create(74836 + "truckcharger", Charger.class))
+				.maxPower(EvUnits.W_PER_kW * 200)
+				.plugCount(2)
+				.linkId(Id.createLinkId(74836))
+				.chargerType("truck")
+				.build();
 
-    }
+		List<ChargerSpecification> chargers = new ArrayList<>();
+		chargers.add(charger);
+		chargers.add(charger2);
+		chargers.add(chargert);
+		chargers.add(chargert2);
+		new ChargerWriter(chargers.stream()).write(folder + "test-chargers.xml");
+		ImmutableList<String> chargingTypes = ImmutableList.<String>builder().add("fast").add("slow").build();
+		ElectricVehicleSpecification ev = ImmutableElectricVehicleSpecification.newBuilder()
+				.id(Id.create("testEV1", ElectricVehicle.class))
+				.batteryCapacity(30 * EvUnits.J_PER_kWh)
+				.initialSoc(30 * EvUnits.J_PER_kWh)
+				.chargerTypes(chargingTypes)
+				.vehicleType("car")
+				.build();
+		new ElectricFleetWriter(Collections.singletonList(ev).stream()).write(folder + "test_evs.xml");
+
+	}
 }

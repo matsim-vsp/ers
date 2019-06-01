@@ -38,8 +38,9 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.infrastructure.Charger;
-import org.matsim.contrib.ev.infrastructure.ChargerImpl;
+import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
 import org.matsim.contrib.ev.infrastructure.ChargerWriter;
+import org.matsim.contrib.ev.infrastructure.ImmutableChargerSpecification;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -61,7 +62,7 @@ public class GenerateChargersFromGasStations {
         });
         Network filteredNet = nfm.applyFilters();
         BufferedReader in = new BufferedReader(new FileReader(folder + "gas-stations-sweden.json"));
-        List<Charger> chargers = new ArrayList<>();
+		List<ChargerSpecification> chargers = new ArrayList<>();
 
 
         JSONParser jp = new JSONParser();
@@ -74,12 +75,24 @@ public class GenerateChargersFromGasStations {
             double x = Double.parseDouble(jo.get("lon").toString());
             Coord c = ct.transform(new Coord(x, y));
             Link l = NetworkUtils.getNearestLink(filteredNet, c);
-            Charger fastCharger = new ChargerImpl(Id.create(l.getId().toString() + "fast", Charger.class), 120 * EvUnits.W_PER_kW, 10, l, c, "fast");
+			ChargerSpecification fastCharger = ImmutableChargerSpecification.newBuilder()
+					.id(Id.create(l.getId().toString() + "fast", Charger.class))
+					.maxPower(120 * EvUnits.W_PER_kW)
+					.plugCount(10)
+					.linkId(l.getId())
+					.chargerType("fast")
+					.build();
             chargers.add(fastCharger);
-            Charger truckCharger = new ChargerImpl(Id.create(l.getId().toString() + "truck", Charger.class), 400 * EvUnits.W_PER_kW, 2, l, c, "truck");
+			ChargerSpecification truckCharger = ImmutableChargerSpecification.newBuilder()
+					.id(Id.create(l.getId().toString() + "truck", Charger.class))
+					.maxPower(400 * EvUnits.W_PER_kW)
+					.plugCount(2)
+					.linkId(l.getId())
+					.chargerType("truck")
+					.build();
             chargers.add(truckCharger);
         }
-        new ChargerWriter(chargers).write(folder + "chargers_gasstations.xml");
+		new ChargerWriter(chargers.stream()).write(folder + "chargers_gasstations.xml");
 
     }
 
