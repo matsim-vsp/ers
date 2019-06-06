@@ -52,43 +52,51 @@ import org.matsim.vsp.ers.scoring.AgentSpecificASCScoring;
 
 public class RunEVTestscenario {
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
+		Config config = ConfigUtils.loadConfig(args[0], new EvConfigGroup());
+		config.transit().setUseTransit(false);
+		config.transit().setUsingTransitInMobsim(false);
+		Scenario scenario = ScenarioUtils.loadScenario(config);
+		Function<Charger, ChargingStrategy> chargingStrategyFactory = charger -> new FastThenSlowCharging(
+				charger.getPower());
 
-        Config config = ConfigUtils.loadConfig(args[0], new EvConfigGroup());
-        config.transit().setUseTransit(false);
-        config.transit().setUsingTransitInMobsim(false);
-        Scenario scenario = ScenarioUtils.loadScenario(config);
-        Function<Charger, ChargingStrategy> chargingStrategyFactory = charger -> new FastThenSlowCharging(charger.getPower());
-
-        VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
-        driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("smallCar", new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile()));
-        driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("mediumCar", new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv").getFile()));
-        driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("SUV", new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
-        driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck", new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile()));
+		VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
+		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("smallCar",
+				new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(
+						ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile()));
+		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("mediumCar",
+				new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readFile(
+						ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv").getFile()));
+		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("SUV",
+				new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(
+						ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
+		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck",
+				new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(
+						ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile()));
 
 		AuxEnergyConsumption.Factory dummy = electricVehicle -> (timeOfDay, period, linkId) -> 0;
-        Controler controler = new Controler(scenario);
-        controler.addOverridingModule(new EvModule());
+		Controler controler = new Controler(scenario);
+		controler.addOverridingModule(new EvModule());
 
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                bind(ElectricFleetSpecification.class).toProvider(VehiclesAsEVFleet.class).asEagerSingleton();
-                bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
-                bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
-                bind(VehicleChargingHandler.class).asEagerSingleton();
-                addRoutingModuleBinding(TransportMode.car).toProvider(new EVNetworkRoutingProvider(TransportMode.car));
-                bind(ChargingLogic.Factory.class).toInstance(
-                        charger -> new ChargingWithQueueingAndAssignmentLogic(charger, chargingStrategyFactory.apply(charger)));
-                addRoutingModuleBinding(TransportMode.truck).toProvider(new EVNetworkRoutingProvider(TransportMode.truck));
-                bindScoringFunctionFactory().to(AgentSpecificASCScoring.class);
-                bind(TransitSchedule.class).toInstance(scenario.getTransitSchedule());
-            }
-        });
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind(ElectricFleetSpecification.class).toProvider(VehiclesAsEVFleet.class).asEagerSingleton();
+				bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
+				bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
+				bind(VehicleChargingHandler.class).asEagerSingleton();
+				addRoutingModuleBinding(TransportMode.car).toProvider(new EVNetworkRoutingProvider(TransportMode.car));
+				bind(ChargingLogic.Factory.class).toProvider(new ChargingWithQueueingAndAssignmentLogic.FactoryProvider(
+						charger -> chargingStrategyFactory.apply(charger)));
+				addRoutingModuleBinding(TransportMode.truck).toProvider(
+						new EVNetworkRoutingProvider(TransportMode.truck));
+				bindScoringFunctionFactory().to(AgentSpecificASCScoring.class);
+				bind(TransitSchedule.class).toInstance(scenario.getTransitSchedule());
+			}
+		});
 
-
-        controler.run();
-    }
+		controler.run();
+	}
 
 }
