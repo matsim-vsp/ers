@@ -24,10 +24,9 @@ package org.matsim.vsp.ers.consumption;/*
 import java.util.function.Predicate;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.ev.EvUnits;
-import org.matsim.contrib.ev.charging.FastThenSlowCharging;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
+import org.matsim.contrib.ev.infrastructure.Charger;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.vsp.ers.stats.ERSMobsimListener;
 
@@ -67,9 +66,9 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 	@Override
 	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
 		double consumption = delegate.calcEnergyConsumption(link, travelTime, linkEnterTime);
-		double maxChargingPower = getElectricRoadChargingPower(link);
-		if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
-			double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
+		Charger charger = getElectricRoadCharger(link);
+		if (charger != null && wantsToCharge.test(ev)) {
+			double charge = calculateCharge(null, travelTime);
 			charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
 			ev.getBattery().charge(charge);
 
@@ -82,16 +81,17 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 		return consumption;
 	}
 
-	private double calculateCharge(double consumption, Link link, double travelTime, double maxChargingPower) {
-		double charge = new FastThenSlowCharging(maxChargingPower).calcChargingPower(ev) * travelTime;
+	private double calculateCharge(Charger charger, double travelTime) {
+		double charge = ev.getChargingPower().calcChargingPower(charger) * travelTime;
 		//TODO: Consider a also the consumed energy to calculate re-charge
 		return charge;
 	}
 
-	private double getElectricRoadChargingPower(Link link) {
-		return link.getAttributes().getAsMap().containsKey(ER_LINK_POWER) ?
-				EvUnits.kW_to_W((double)link.getAttributes().getAttribute(ER_LINK_POWER)) :
-				0.0;
+	private Charger getElectricRoadCharger(Link link) {
+		//		return link.getAttributes().getAsMap().containsKey(ER_LINK_POWER) ?
+		//				EvUnits.kW_to_W((double)link.getAttributes().getAttribute(ER_LINK_POWER)) :
+		//				0.0;
+		return null; //FIXME all these chargers should be registered in the infrastructure (
 	}
 }
 
