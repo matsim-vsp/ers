@@ -21,15 +21,14 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 09.10.2018
  */
 
-import java.util.function.Function;
-
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
+import org.matsim.contrib.ev.charging.ChargeUpToMaxSocStrategy;
 import org.matsim.contrib.ev.charging.ChargingLogic;
-import org.matsim.contrib.ev.charging.ChargingStrategy;
+import org.matsim.contrib.ev.charging.ChargingPower;
 import org.matsim.contrib.ev.charging.ChargingWithQueueingAndAssignmentLogic;
 import org.matsim.contrib.ev.charging.FastThenSlowCharging;
 import org.matsim.contrib.ev.charging.VehicleChargingHandler;
@@ -37,7 +36,6 @@ import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
 import org.matsim.contrib.ev.fleet.ElectricFleetSpecification;
-import org.matsim.contrib.ev.infrastructure.Charger;
 import org.matsim.contrib.ev.infrastructure.LTHConsumptionModelReader;
 import org.matsim.contrib.ev.routing.EVNetworkRoutingProvider;
 import org.matsim.core.config.Config;
@@ -58,8 +56,6 @@ public class RunEVTestscenario {
 		config.transit().setUseTransit(false);
 		config.transit().setUsingTransitInMobsim(false);
 		Scenario scenario = ScenarioUtils.loadScenario(config);
-		Function<Charger, ChargingStrategy> chargingStrategyFactory = charger -> new FastThenSlowCharging(
-				charger.getPower());
 
 		VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("smallCar",
@@ -88,7 +84,8 @@ public class RunEVTestscenario {
 				bind(VehicleChargingHandler.class).asEagerSingleton();
 				addRoutingModuleBinding(TransportMode.car).toProvider(new EVNetworkRoutingProvider(TransportMode.car));
 				bind(ChargingLogic.Factory.class).toProvider(new ChargingWithQueueingAndAssignmentLogic.FactoryProvider(
-						charger -> chargingStrategyFactory.apply(charger)));
+						charger -> new ChargeUpToMaxSocStrategy(charger, 1)));
+				bind(ChargingPower.Factory.class).toInstance(FastThenSlowCharging::new);
 				addRoutingModuleBinding(TransportMode.truck).toProvider(
 						new EVNetworkRoutingProvider(TransportMode.truck));
 				bindScoringFunctionFactory().to(AgentSpecificASCScoring.class);
