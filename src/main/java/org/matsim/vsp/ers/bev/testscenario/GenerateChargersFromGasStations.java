@@ -21,12 +21,6 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 12.10.2018
  */
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -47,6 +41,12 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class GenerateChargersFromGasStations {
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -62,7 +62,7 @@ public class GenerateChargersFromGasStations {
         });
         Network filteredNet = nfm.applyFilters();
         BufferedReader in = new BufferedReader(new FileReader(folder + "gas-stations-sweden.json"));
-		List<ChargerSpecification> chargers = new ArrayList<>();
+        Map<Id<Charger>, ChargerSpecification> chargers = new HashMap<>();
 
 
         JSONParser jp = new JSONParser();
@@ -75,24 +75,27 @@ public class GenerateChargersFromGasStations {
             double x = Double.parseDouble(jo.get("lon").toString());
             Coord c = ct.transform(new Coord(x, y));
             Link l = NetworkUtils.getNearestLink(filteredNet, c);
+            Id<Charger> carCharger = Id.create(l.getId().toString() + "fast", Charger.class);
 			ChargerSpecification fastCharger = ImmutableChargerSpecification.newBuilder()
-					.id(Id.create(l.getId().toString() + "fast", Charger.class))
+                    .id(carCharger)
 					.maxPower(120 * EvUnits.W_PER_kW)
 					.plugCount(10)
 					.linkId(l.getId())
 					.chargerType("fast")
 					.build();
-            chargers.add(fastCharger);
-			ChargerSpecification truckCharger = ImmutableChargerSpecification.newBuilder()
-					.id(Id.create(l.getId().toString() + "truck", Charger.class))
+            chargers.put(carCharger, fastCharger);
+            Id<Charger> truckChargerId = Id.create(l.getId().toString() + "truck", Charger.class);
+
+            ChargerSpecification truckCharger = ImmutableChargerSpecification.newBuilder()
+                    .id(truckChargerId)
 					.maxPower(400 * EvUnits.W_PER_kW)
 					.plugCount(2)
 					.linkId(l.getId())
 					.chargerType("truck")
 					.build();
-            chargers.add(truckCharger);
+            chargers.put(truckChargerId, truckCharger);
         }
-		new ChargerWriter(chargers.stream()).write(folder + "chargers_gasstations.xml");
+        new ChargerWriter(chargers.values().stream()).write(folder + "chargers_gasstations.xml");
 
     }
 

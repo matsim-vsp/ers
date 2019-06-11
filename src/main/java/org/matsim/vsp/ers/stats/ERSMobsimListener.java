@@ -28,6 +28,9 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.ev.EvUnits;
+import org.matsim.contrib.ev.fleet.ElectricFleet;
+import org.matsim.contrib.ev.fleet.ElectricVehicle;
+import org.matsim.contrib.ev.stats.ChargerPowerCollector;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.IterationCounter;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -41,10 +44,10 @@ import org.matsim.vsp.ers.consumption.ElectricRoadEnergyConsumption;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.DoubleStream;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimInitializedListener {
 
@@ -56,45 +59,6 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
         simEnd = Math.max(config.qsim().getEndTime(), 36 * 3600);
     }
 
-    public static class ERSLinkStats {
-        public static String ERSLINKSTATS = "ersStats";
-        DecimalFormat df = new DecimalFormat("0.00");
-
-
-        public ERSLinkStats(double simStart, double simEnd, double binsize, Id<Link> linkId) {
-            bins = (int) ((simEnd - simStart) / binsize);
-            this.startTime = simStart;
-            this.binsize = binsize;
-            this.emmitedEnergy = new double[bins];
-            this.linkId = linkId;
-
-        }
-
-        public void addEmmitedEnergy(double time, double energy) {
-            emmitedEnergy[getBin(time)] += energy;
-        }
-
-        private int getBin(double time) {
-            return (int) ((time - startTime) / binsize);
-        }
-
-        private double[] emmitedEnergy;
-        private int bins;
-        private final double startTime;
-        private final double binsize;
-        private final Id<Link> linkId;
-
-        public List<String> getRecords() {
-            List<String> record = new ArrayList<>();
-            record.add(linkId.toString());
-            for (int i = 0; i < emmitedEnergy.length; i++) {
-                record.add(df.format(EvUnits.J_to_kWh(emmitedEnergy[i])));
-            }
-            record.add(df.format(EvUnits.J_to_kWh(DoubleStream.of(emmitedEnergy).sum())));
-            return record;
-        }
-    }
-
     private static double BINSIZE = 3600;
     @Inject
     OutputDirectoryHierarchy controlerIO;
@@ -104,6 +68,13 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
     Network network;
     @Inject
     Config config;
+
+    @Inject
+    ElectricFleet electricFleet;
+
+    @Inject
+    ChargerPowerCollector chargerPowerCollector;
+
     private int bins;
 
     final double simStart;
@@ -111,14 +82,20 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
 
     @Override
     public void notifyMobsimBeforeCleanup(MobsimBeforeCleanupEvent e) {
-        try {
-            List<String> header = new ArrayList<>();
-            header.add("Link");
-            for (int i = 0; i < bins; i++) {
-                header.add(Time.writeTime(i * BINSIZE));
-            }
-            header.add("Total");
-            CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(Paths.get(controlerIO.getIterationFilename(iterationCounter.getIterationNumber(), "ERS_usage.csv"))), CSVFormat.DEFAULT.withDelimiter(';'));
+
+        writeERSUsage();
+        analyseChargingEnergy();
+
+    }
+
+    private void writeERSUsage() {
+        List<String> header = new ArrayList<>();
+        header.add("Link");
+        for (int i = 0; i < bins; i++) {
+            header.add(Time.writeTime(i * BINSIZE));
+        }
+        header.add("Total");
+        try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(Paths.get(controlerIO.getIterationFilename(iterationCounter.getIterationNumber(), "ERS_usage.csv"))), CSVFormat.DEFAULT.withDelimiter(';'))) {
             csvPrinter.printRecord(header);
             network.getLinks().values().stream().
                     filter(l -> l.getAttributes().getAsMap().containsKey(ERSLinkStats.ERSLINKSTATS)).
@@ -129,12 +106,29 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
                             e1.printStackTrace();
                         }
                     });
-            csvPrinter.close();
-
-
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private void analyseChargingEnergy() {
+        Map<Id<ElectricVehicle>, Double> aggregatedErsEnergy = aggregateErsEnergy();
+        Map<Id<ElectricVehicle>, Double> aggregatedFastChargerEnergy = chargerPowerCollector.getLogList().stream().collect(Collectors.toMap(k -> k.getVehicleId(), k -> k.getTransmitted_Energy(), (o, o2) -> o + o2));
+        try (
+                CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(Paths.get(controlerIO.getIterationFilename(iterationCounter.getIterationNumber(), "energy_sources_split.csv"))), CSVFormat.DEFAULT.withDelimiter(';')
+                        .withHeader("VehicleId", "energyAtSimStart", "energyfromERS", "energyFromFastCharging", "energyAtSimEnd"))
+        ) {
+            for (ElectricVehicle ev : electricFleet.getElectricVehicles().values()) {
+                csvPrinter.printRecord(ev.getId().toString(),
+                        EvUnits.J_to_kWh(ev.getBattery().getCapacity()),
+                        EvUnits.J_to_kWh(aggregatedErsEnergy.getOrDefault(ev.getId(), 0.0)),
+                        EvUnits.J_to_kWh(aggregatedFastChargerEnergy.getOrDefault(ev.getId(), 0.0)),
+                        EvUnits.J_to_kWh(ev.getBattery().getSoc()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
@@ -146,6 +140,15 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
                 stream().
                 filter(l -> l.getAttributes().getAsMap().containsKey(ElectricRoadEnergyConsumption.ER_LINK_POWER)).
                 forEach(l -> l.getAttributes().putAttribute(ERSLinkStats.ERSLINKSTATS, new ERSLinkStats(simStart, simEnd, BINSIZE, ((Link) l).getId())));
+    }
+
+    private Map<Id<ElectricVehicle>, Double> aggregateErsEnergy() {
+        return network.getLinks().values().stream()
+                .filter(l -> l.getAttributes().getAsMap().containsKey(ERSLinkStats.ERSLINKSTATS))
+                .flatMap(l -> (((ERSLinkStats) l.getAttributes().getAttribute(ERSLinkStats.ERSLINKSTATS))).getErsEnergyPerVehicle().entrySet().stream())
+                .collect(Collectors.toMap(k -> k.getKey(), v -> v.getValue(), (v1, v2) -> v1 + v2));
+
+
     }
 }
 
