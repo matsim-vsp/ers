@@ -26,12 +26,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
-import org.matsim.contrib.ev.charging.ChargeUpToMaxSocStrategy;
-import org.matsim.contrib.ev.charging.ChargingLogic;
-import org.matsim.contrib.ev.charging.ChargingPower;
-import org.matsim.contrib.ev.charging.ChargingWithQueueingAndAssignmentLogic;
-import org.matsim.contrib.ev.charging.FastThenSlowCharging;
-import org.matsim.contrib.ev.charging.VehicleChargingHandler;
+import org.matsim.contrib.ev.charging.*;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
@@ -51,7 +46,11 @@ import org.matsim.vsp.ers.consumption.ElectricRoadEnergyConsumption;
 import org.matsim.vsp.ers.scoring.AgentSpecificASCScoring;
 import org.matsim.vsp.ers.stats.ERSMobsimListener;
 
-public class RunERSTestscenario {
+/**
+ * All vehicles use ERS if available.
+ */
+
+public class RunERSScenario {
 
 	public static void main(String[] args) {
 
