@@ -37,21 +37,31 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class GenerateERS {
 
-    public static final String SWEDENSHAPE = "D:/ers/sweden-model/commuters/ers.shp";
+    //    public static final String SWEDENSHAPE = "D:/ers/sweden-model/commuters/ers.shp";
+    public static final String SWEDENSHAPE = "D:/ers/sweden-model/commuters/sweden_oneshape.shp";
     public static final String SWEDENNET = "D:/ers/scenario/network-osm.xml.gz";
-    public static final String SWEDENNET_ERS = "D:/ers/scenario/network-osm-ers.xml.gz";
-    public static final String SWEDENNET_ERS_only = "D:/ers/scenario/network-osm-ers-only.xml.gz";
+    public static final String SWEDENNET_ERS = "D:/ers/scenario/network-osm-ers-full110.xml.gz";
+    public static final String SWEDENNET_ERS_only = "D:/ers/scenario/network-osm-ers-full-only110.xml.gz";
 
     public static void main(String[] args) {
         Feature cover = ShapeFileReader.getAllFeatures(SWEDENSHAPE).iterator().next();
         MultiPolygon polygon = (MultiPolygon) ((SimpleFeature) cover).getDefaultGeometry();
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(SWEDENNET);
+
+        // motorways only
+//        network.getLinks().values().stream().
+//                filter(l -> polygon.contains(MGC.coord2Point(((Link) l).getCoord()))).
+//                filter(l -> (l.getFreespeed() > 80 / 3.6 && l.getNumberOfLanes() > 1) || (l.getFreespeed() > 110 / 3.6)).
+//                forEach(l -> l.getAttributes().putAttribute(ElectricRoadEnergyConsumption.ER_LINK_POWER, 100.0));
+//
+
+        // all big roads
         network.getLinks().values().stream().
-                filter(l -> polygon.contains(MGC.coord2Point(((Link) l).getCoord()))).
-//                filter(l->String.valueOf(l.getAttributes().getAttribute("type")).equals("motorway")).
-        filter(l -> (l.getFreespeed() > 80 / 3.6 && l.getNumberOfLanes() > 1) || (l.getFreespeed() > 110 / 3.6)).
-                forEach(l -> l.getAttributes().putAttribute(ElectricRoadEnergyConsumption.ER_LINK_POWER, 100.0));
+                filter(l -> polygon.contains(MGC.coord2Point(l.getCoord())))
+                .filter(l -> (l.getFreespeed() > 109 / 3.6))
+                .forEach(l -> l.getAttributes().putAttribute(ElectricRoadEnergyConsumption.ER_LINK_POWER, 100.0));
+
 
         NetworkFilterManager networkFilterManager = new NetworkFilterManager(network);
         networkFilterManager.addLinkFilter(new NetworkLinkFilter() {
@@ -62,6 +72,8 @@ public class GenerateERS {
         });
 
         new NetworkWriter(network).write(SWEDENNET_ERS);
-        new NetworkWriter(networkFilterManager.applyFilters()).write(SWEDENNET_ERS_only);
+        Network filterNet = networkFilterManager.applyFilters();
+        new NetworkWriter(filterNet).write(SWEDENNET_ERS_only);
+        System.out.println(filterNet.getLinks().values().stream().mapToDouble(l -> l.getLength()).sum() / 1000.);
     }
 }
