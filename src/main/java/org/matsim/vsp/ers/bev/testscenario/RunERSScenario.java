@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
+import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.charging.*;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
@@ -55,6 +56,11 @@ public class RunERSScenario {
 	public static void main(String[] args) {
 
 		Config config = ConfigUtils.loadConfig(args[0], new EvConfigGroup());
+		double truckCapacitykWh = Double.parseDouble(args[1]);
+		double smallCarCapacitykWh = Double.parseDouble(args[2]);
+		double mediumCarCapacitykWh = Double.parseDouble(args[3]);
+		double suvCarCapacitykWh = Double.parseDouble(args[4]);
+
 		config.transit().setUseTransit(false);
 		config.transit().setUsingTransitInMobsim(false);
 		Scenario scenario = ScenarioUtils.loadScenario(config);
@@ -75,7 +81,7 @@ public class RunERSScenario {
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck",
 				new ElectricRoadEnergyConsumption.Factory(b -> true,
 						new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(
-								ConfigGroup.getInputFileURL(config.getContext(), "HGV40Map.csv").getFile())));
+								ConfigGroup.getInputFileURL(config.getContext(), "HGV16Map.csv").getFile())));
 
 		AuxEnergyConsumption.Factory dummy = electricVehicle -> (timeOfDay, period, linkId) -> 0;
 
@@ -85,7 +91,7 @@ public class RunERSScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				bind(ElectricFleetSpecification.class).toProvider(VehiclesAsEVFleet.class).asEagerSingleton();
+				bind(ElectricFleetSpecification.class).toProvider(new VehiclesAsEVFleet(EvUnits.kWh_to_J(truckCapacitykWh), EvUnits.kWh_to_J(smallCarCapacitykWh), EvUnits.kWh_to_J(mediumCarCapacitykWh), EvUnits.kWh_to_J(suvCarCapacitykWh))).asEagerSingleton();
 				bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
 				bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
 				addRoutingModuleBinding(TransportMode.car).toProvider(new EVNetworkRoutingProvider(TransportMode.car));

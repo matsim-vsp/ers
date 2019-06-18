@@ -30,7 +30,6 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.fleet.*;
 import org.matsim.core.gbl.MatsimRandom;
 
@@ -45,21 +44,28 @@ public class VehiclesAsEVFleet implements Provider<ElectricFleetSpecification> {
     private ElectricFleetSpecification electricFleet;
 
     private final String truckType = "truck";
-    private final double truckCapacity = 1000 * EvUnits.J_PER_kWh;
+    private final double truckCapacity;
     private final ImmutableList<String> truckChargers = ImmutableList.<String>builder().add("truck").build();
 
     private final String smallcarType = "smallCar";
-    private final double smallCarCapacity = 40 * EvUnits.J_PER_kWh;
+    private final double smallCarCapacity;
 
     private final String mediumcarType = "mediumCar";
-    private final double mediumCarCapacity = 60 * EvUnits.J_PER_kWh;
+    private final double mediumCarCapacity;
 
     private final String suvcarType = "SUV";
-    private final double suvCarCapacity = 100 * EvUnits.J_PER_kWh;
+    private final double suvCarCapacity;
 
     private final ImmutableList<String> carChargers = ImmutableList.<String>builder().add("fast").build();
 
     private final Random random = MatsimRandom.getRandom();
+
+    public VehiclesAsEVFleet(double truckCapacity, double smallCarCapacity, double mediumCarCapacity, double suvCarCapacity) {
+        this.truckCapacity = truckCapacity;
+        this.smallCarCapacity = smallCarCapacity;
+        this.mediumCarCapacity = mediumCarCapacity;
+        this.suvCarCapacity = suvCarCapacity;
+    }
 
     @Override
     public ElectricFleetSpecification get() {
