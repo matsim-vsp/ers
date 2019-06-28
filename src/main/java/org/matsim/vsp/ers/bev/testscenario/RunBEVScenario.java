@@ -27,13 +27,18 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
 import org.matsim.contrib.ev.EvUnits;
-import org.matsim.contrib.ev.charging.*;
+import org.matsim.contrib.ev.charging.ChargeUpToMaxSocStrategy;
+import org.matsim.contrib.ev.charging.ChargingLogic;
+import org.matsim.contrib.ev.charging.ChargingPower;
+import org.matsim.contrib.ev.charging.ChargingWithQueueingAndAssignmentLogic;
+import org.matsim.contrib.ev.charging.FastThenSlowCharging;
+import org.matsim.contrib.ev.charging.VehicleChargingHandler;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.discharging.VehicleTypeSpecificDriveEnergyConsumptionFactory;
 import org.matsim.contrib.ev.fleet.ElectricFleetSpecification;
 import org.matsim.contrib.ev.infrastructure.LTHConsumptionModelReader;
-import org.matsim.contrib.ev.routing.EVNetworkRoutingProvider;
+import org.matsim.contrib.ev.routing.EvNetworkRoutingProvider;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
@@ -89,12 +94,12 @@ public class RunBEVScenario {
                 bind(ElectricFleetSpecification.class).toProvider(new VehiclesAsEVFleet(EvUnits.kWh_to_J(truckCapacitykWh), EvUnits.kWh_to_J(smallCarCapacitykWh), EvUnits.kWh_to_J(mediumCarCapacitykWh), EvUnits.kWh_to_J(suvCarCapacitykWh))).asEagerSingleton();
                 bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
                 bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
-                addRoutingModuleBinding(TransportMode.car).toProvider(new EVNetworkRoutingProvider(TransportMode.car));
+                addRoutingModuleBinding(TransportMode.car).toProvider(new EvNetworkRoutingProvider(TransportMode.car));
                 bind(ChargingLogic.Factory.class).toProvider(new ChargingWithQueueingAndAssignmentLogic.FactoryProvider(
                         charger -> new ChargeUpToMaxSocStrategy(charger, 1)));
                 bind(ChargingPower.Factory.class).toInstance(FastThenSlowCharging::new);
                 addRoutingModuleBinding(TransportMode.truck).toProvider(
-                        new EVNetworkRoutingProvider(TransportMode.truck));
+                        new EvNetworkRoutingProvider(TransportMode.truck));
                 bindScoringFunctionFactory().to(AgentSpecificASCScoring.class);
                 bind(TransitSchedule.class).toInstance(scenario.getTransitSchedule());
                 installQSimModule(new AbstractQSimModule() {
