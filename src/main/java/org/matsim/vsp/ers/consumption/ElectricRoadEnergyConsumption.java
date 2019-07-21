@@ -21,6 +21,8 @@ package org.matsim.vsp.ers.consumption;/*
  * created by jbischoff, 15.05.2019
  */
 
+import java.util.function.Predicate;
+
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.charging.FastThenSlowCharging;
@@ -29,71 +31,68 @@ import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.vsp.ers.stats.ERSLinkStats;
 
-import java.util.function.Predicate;
-
 public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 
-    public static String ER_LINK_POWER = "ersPower_kW";
-    private final Predicate<ElectricVehicle> wantsToCharge;
+	public static String ER_LINK_POWER = "ersPower_kW";
+	private final Predicate<ElectricVehicle> wantsToCharge;
 
-    private final DriveEnergyConsumption delegate;
+	private final DriveEnergyConsumption delegate;
 
-    private final ElectricVehicle ev;
+	private final ElectricVehicle ev;
 
-    public static class Factory implements DriveEnergyConsumption.Factory {
+	public static class Factory implements DriveEnergyConsumption.Factory {
 
-        private final Predicate<ElectricVehicle> wantsToCharge;
-        private final DriveEnergyConsumption.Factory delegateFactory;
+		private final Predicate<ElectricVehicle> wantsToCharge;
+		private final DriveEnergyConsumption.Factory delegateFactory;
 
-        public Factory(Predicate<ElectricVehicle> wantsToCharge, DriveEnergyConsumption.Factory delegateFactory) {
-            this.wantsToCharge = wantsToCharge;
-            this.delegateFactory = delegateFactory;
-        }
+		public Factory(Predicate<ElectricVehicle> wantsToCharge, DriveEnergyConsumption.Factory delegateFactory) {
+			this.wantsToCharge = wantsToCharge;
+			this.delegateFactory = delegateFactory;
+		}
 
-        @Override
-        public DriveEnergyConsumption create(ElectricVehicle electricVehicle) {
-            return new ElectricRoadEnergyConsumption(delegateFactory.create(electricVehicle), wantsToCharge, electricVehicle);
-        }
-    }
+		@Override
+		public DriveEnergyConsumption create(ElectricVehicle electricVehicle) {
+			return new ElectricRoadEnergyConsumption(delegateFactory.create(electricVehicle), wantsToCharge,
+					electricVehicle);
+		}
+	}
 
+	private ElectricRoadEnergyConsumption(DriveEnergyConsumption delegate, Predicate<ElectricVehicle> wantsToCharge,
+			ElectricVehicle electricVehicle) {
+		this.delegate = delegate;
+		this.wantsToCharge = wantsToCharge;
+		this.ev = electricVehicle;
+	}
 
-    private ElectricRoadEnergyConsumption(DriveEnergyConsumption delegate, Predicate<ElectricVehicle> wantsToCharge, ElectricVehicle electricVehicle) {
-        this.delegate = delegate;
-        this.wantsToCharge = wantsToCharge;
-        this.ev = electricVehicle;
-    }
-
-    @Override
-    public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
-        double consumption = delegate.calcEnergyConsumption(link, travelTime, linkEnterTime);
-        double maxChargingPower = getElectricRoadChargingPower(link);
-        if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
-            double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
-            charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
-            ev.getBattery().charge(charge);
+	@Override
+	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
+		double consumption = delegate.calcEnergyConsumption(link, travelTime, linkEnterTime);
+		double maxChargingPower = getElectricRoadChargingPower(link);
+		if (maxChargingPower > 0 && wantsToCharge.test(ev)) {
+			double charge = calculateCharge(consumption, link, travelTime, maxChargingPower);
+			charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
+			ev.getBattery().changeSoc(charge);
 
 			if (!Time.isUndefinedTime(linkEnterTime)) {
-                ((ERSLinkStats) link.getAttributes()
-                        .getAttribute(ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergyForVehicle(linkEnterTime,
-                        charge, ev);
+				((ERSLinkStats)link.getAttributes().getAttribute(ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergyForVehicle(
+						linkEnterTime, charge, ev);
 			}
 		}
 		return consumption;
 	}
 
-    private double calculateCharge(double consumption, Link link, double travelTime, double maxChargingPower) {
-        double charge = new FastThenSlowCharging(ev).calcChargingPower(maxChargingPower);
-        //TODO: Consider a also the consumed energy to calculate re-charge
-        return charge;
-    }
+	private double calculateCharge(double consumption, Link link, double travelTime, double maxChargingPower) {
+		double charge = new FastThenSlowCharging(ev).calcChargingPower(maxChargingPower);
+		//TODO: Consider a also the consumed energy to calculate re-charge
+		return charge;
+	}
 
-    private double getElectricRoadChargingPower(Link link) {
-        if (link.getAttributes().getAsMap().containsKey(ER_LINK_POWER)) {
-            return EvUnits.kW_to_W((double) link.getAttributes().getAttribute(ER_LINK_POWER));
-        } else
-            return 0.0;
-    }
-
+	private double getElectricRoadChargingPower(Link link) {
+		if (link.getAttributes().getAsMap().containsKey(ER_LINK_POWER)) {
+			return EvUnits.kW_to_W((double)link.getAttributes().getAttribute(ER_LINK_POWER));
+		} else
+			return 0.0;
+	}
 
 }
 
