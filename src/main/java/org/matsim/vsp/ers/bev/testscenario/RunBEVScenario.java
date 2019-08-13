@@ -71,17 +71,17 @@ public class RunBEVScenario {
 
         VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("smallCar",
-                new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(
-                        ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile()));
+                new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readURL(
+                        ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv")));
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("mediumCar",
-                new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readFile(
-                        ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv").getFile()));
+                new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readURL(
+                        ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv")));
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("SUV",
-                new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(
-                        ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile()));
+                new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readURL(
+                        ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv")));
         driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck",
-                new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(
-                        ConfigGroup.getInputFileURL(config.getContext(), "HGV16Map.csv").getFile()));
+                new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readURL(
+                        ConfigGroup.getInputFileURL(config.getContext(), "HGV16Map.csv")));
 
         AuxEnergyConsumption.Factory dummy = electricVehicle -> (timeOfDay, period, linkId) -> 0;
 

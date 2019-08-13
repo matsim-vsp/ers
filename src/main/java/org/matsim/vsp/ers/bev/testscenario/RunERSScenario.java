@@ -73,20 +73,20 @@ public class RunERSScenario {
 		VehicleTypeSpecificDriveEnergyConsumptionFactory driveEnergyConsumptionFactory = new VehicleTypeSpecificDriveEnergyConsumptionFactory();
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("smallCar",
 				new ElectricRoadEnergyConsumption.Factory(b -> true,
-						new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readFile(
-								ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv").getFile())));
+						new LTHConsumptionModelReader(Id.create("smallCar", VehicleType.class)).readURL(
+								ConfigGroup.getInputFileURL(config.getContext(), "CityCarMap.csv"))));
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("mediumCar",
 				new ElectricRoadEnergyConsumption.Factory(b -> true,
-						new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readFile(
-								ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv").getFile())));
+						new LTHConsumptionModelReader(Id.create("mediumCar", VehicleType.class)).readURL(
+								ConfigGroup.getInputFileURL(config.getContext(), "MidCarMap.csv"))));
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("SUV",
 				new ElectricRoadEnergyConsumption.Factory(b -> true,
-						new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readFile(
-								ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv").getFile())));
+						new LTHConsumptionModelReader(Id.create("SUV", VehicleType.class)).readURL(
+								ConfigGroup.getInputFileURL(config.getContext(), "SUVMap.csv"))));
 		driveEnergyConsumptionFactory.addEnergyConsumptionModelFactory("truck",
 				new ElectricRoadEnergyConsumption.Factory(b -> true,
-						new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readFile(
-								ConfigGroup.getInputFileURL(config.getContext(), "HGV16Map.csv").getFile())));
+						new LTHConsumptionModelReader(Id.create("truck", VehicleType.class)).readURL(
+								ConfigGroup.getInputFileURL(config.getContext(), "HGV16Map.csv"))));
 
 		AuxEnergyConsumption.Factory dummy = electricVehicle -> (timeOfDay, period, linkId) -> 0;
 
@@ -96,7 +96,10 @@ public class RunERSScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				bind(ElectricFleetSpecification.class).toProvider(new VehiclesAsEVFleet(EvUnits.kWh_to_J(truckCapacitykWh), EvUnits.kWh_to_J(smallCarCapacitykWh), EvUnits.kWh_to_J(mediumCarCapacitykWh), EvUnits.kWh_to_J(suvCarCapacitykWh))).asEagerSingleton();
+				bind(ElectricFleetSpecification.class).toProvider(
+						new VehiclesAsEVFleet(EvUnits.kWh_to_J(truckCapacitykWh), EvUnits.kWh_to_J(smallCarCapacitykWh),
+								EvUnits.kWh_to_J(mediumCarCapacitykWh), EvUnits.kWh_to_J(suvCarCapacitykWh)))
+						.asEagerSingleton();
 				bind(DriveEnergyConsumption.Factory.class).toInstance(driveEnergyConsumptionFactory);
 				bind(AuxEnergyConsumption.Factory.class).toInstance(dummy);
 				addRoutingModuleBinding(TransportMode.car).toProvider(new EvNetworkRoutingProvider(TransportMode.car));

@@ -18,49 +18,54 @@
 
 package org.matsim.vsp.ers.scoring;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.scoring.ScoringFunction;
 import org.matsim.core.scoring.ScoringFunctionFactory;
 import org.matsim.core.scoring.SumScoringFunction;
-import org.matsim.core.scoring.functions.*;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.matsim.core.scoring.functions.CharyparNagelActivityScoring;
+import org.matsim.core.scoring.functions.CharyparNagelAgentStuckScoring;
+import org.matsim.core.scoring.functions.CharyparNagelLegScoring;
+import org.matsim.core.scoring.functions.CharyparNagelMoneyScoring;
+import org.matsim.core.scoring.functions.ScoringParameters;
 
 public class AgentSpecificASCScoring implements ScoringFunctionFactory {
 
-    private final Scenario scenario;
+	private final Scenario scenario;
 
-    @Singleton
-    @Inject
-    public AgentSpecificASCScoring(Scenario scenario) {
-        this.scenario = scenario;
-    }
+	@Singleton
+	@Inject
+	public AgentSpecificASCScoring(Scenario scenario) {
+		this.scenario = scenario;
+	}
 
-    @Override
-    public ScoringFunction createNewScoringFunction(Person person) {
-        SumScoringFunction sumScoringFunction = new SumScoringFunction();
+	@Override
+	public ScoringFunction createNewScoringFunction(Person person) {
+		SumScoringFunction sumScoringFunction = new SumScoringFunction();
 
-        // Score activities, legs, payments and being stuck
-        // with the default MATSim scoring based on utility parameters in the config file.
-        ScoringParameters.Builder builder = new ScoringParameters.Builder(scenario, person.getId());
+		// Score activities, legs, payments and being stuck
+		// with the default MATSim scoring based on utility parameters in the config file.
+		ScoringParameters.Builder builder = new ScoringParameters.Builder(scenario, person);
 
-        Boolean metropolitanAgent = (Boolean) person.getAttributes().getAttribute("metropolitanRegion");
-        if (metropolitanAgent != null) {
-            if (metropolitanAgent) {
-                double constant = scenario.getConfig().planCalcScore().getModes().get(TransportMode.car).getConstant() * 1.5;
-                builder.getModeParameters(TransportMode.car).setDailyMoneyConstant(constant);
-            }
-        }
+		Boolean metropolitanAgent = (Boolean)person.getAttributes().getAttribute("metropolitanRegion");
+		if (metropolitanAgent != null) {
+			if (metropolitanAgent) {
+				double constant = scenario.getConfig().planCalcScore().getModes().get(TransportMode.car).getConstant()
+						* 1.5;
+				builder.getModeParameters(TransportMode.car).setDailyMoneyConstant(constant);
+			}
+		}
 
-        ScoringParameters params = builder.build();
-        sumScoringFunction.addScoringFunction(new CharyparNagelActivityScoring(params));
-        sumScoringFunction.addScoringFunction(new CharyparNagelLegScoring(params, scenario.getNetwork()));
-        sumScoringFunction.addScoringFunction(new CharyparNagelMoneyScoring(params));
-        sumScoringFunction.addScoringFunction(new CharyparNagelAgentStuckScoring(params));
-        return sumScoringFunction;
-    }
+		ScoringParameters params = builder.build();
+		sumScoringFunction.addScoringFunction(new CharyparNagelActivityScoring(params));
+		sumScoringFunction.addScoringFunction(new CharyparNagelLegScoring(params, scenario.getNetwork()));
+		sumScoringFunction.addScoringFunction(new CharyparNagelMoneyScoring(params));
+		sumScoringFunction.addScoringFunction(new CharyparNagelAgentStuckScoring(params));
+		return sumScoringFunction;
+	}
 
 }
