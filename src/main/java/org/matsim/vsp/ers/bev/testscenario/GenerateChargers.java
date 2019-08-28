@@ -51,14 +51,14 @@ public class GenerateChargers {
 
 		ChargerSpecification charger = ImmutableChargerSpecification.newBuilder()
 				.id(Id.create(113273 + "charger", Charger.class))
-				.maxPower(EvUnits.W_PER_kW * 50)
+				.plugPower(EvUnits.W_PER_kW * 50)
 				.plugCount(2)
 				.linkId(Id.createLinkId(113273))
 				.chargerType("fast")
 				.build();
 		ChargerSpecification charger2 = ImmutableChargerSpecification.newBuilder()
 				.id(Id.create(74836 + "charger", Charger.class))
-				.maxPower(EvUnits.W_PER_kW * 50)
+				.plugPower(EvUnits.W_PER_kW * 50)
 				.plugCount(2)
 				.linkId(Id.createLinkId(74836))
 				.chargerType("fast")
@@ -66,14 +66,14 @@ public class GenerateChargers {
 
 		ChargerSpecification chargert = ImmutableChargerSpecification.newBuilder()
 				.id(Id.create(113273 + "truckcharger", Charger.class))
-				.maxPower(EvUnits.W_PER_kW * 200)
+				.plugPower(EvUnits.W_PER_kW * 200)
 				.plugCount(2)
 				.linkId(Id.createLinkId(113273))
 				.chargerType("truck")
 				.build();
 		ChargerSpecification chargert2 = ImmutableChargerSpecification.newBuilder()
 				.id(Id.create(74836 + "truckcharger", Charger.class))
-				.maxPower(EvUnits.W_PER_kW * 200)
+				.plugPower(EvUnits.W_PER_kW * 200)
 				.plugCount(2)
 				.linkId(Id.createLinkId(74836))
 				.chargerType("truck")

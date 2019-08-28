@@ -21,6 +21,12 @@ package org.matsim.vsp.ers.bev.testscenario;/*
  * created by jbischoff, 12.10.2018
  */
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -40,12 +46,6 @@ import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GenerateChargersFromGasStations {
 
@@ -78,7 +78,7 @@ public class GenerateChargersFromGasStations {
             Id<Charger> carCharger = Id.create(l.getId().toString() + "fast", Charger.class);
 			ChargerSpecification fastCharger = ImmutableChargerSpecification.newBuilder()
                     .id(carCharger)
-					.maxPower(120 * EvUnits.W_PER_kW)
+					.plugPower(120 * EvUnits.W_PER_kW)
 					.plugCount(10)
 					.linkId(l.getId())
 					.chargerType("fast")
@@ -88,7 +88,7 @@ public class GenerateChargersFromGasStations {
 
             ChargerSpecification truckCharger = ImmutableChargerSpecification.newBuilder()
                     .id(truckChargerId)
-					.maxPower(400 * EvUnits.W_PER_kW)
+					.plugPower(400 * EvUnits.W_PER_kW)
 					.plugCount(2)
 					.linkId(l.getId())
 					.chargerType("truck")
