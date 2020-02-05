@@ -44,6 +44,6 @@ public class TestConsumption {
 		Node n2 = NetworkUtils.createNode(Id.createNodeId("2"));
 		Link l = NetworkUtils.createLink(Id.createLinkId("b"), n1, n2, n, 1000, 0.3, 300, 2);
 		l.getAttributes().putAttribute("slopes", new double[] { 0.05 });
-		System.out.println(c.calcEnergyConsumption(l, 33.33333333333, Time.getUndefinedTime()));
+		System.out.println(c.calcEnergyConsumption(l, 33.33333333333, 0));//
 	}
 }
