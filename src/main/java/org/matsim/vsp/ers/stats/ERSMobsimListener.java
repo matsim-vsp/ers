@@ -21,7 +21,14 @@ package org.matsim.vsp.ers.stats;/*
  * created by jbischoff, 17.05.2019
  */
 
-import com.google.inject.Inject;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.matsim.api.core.v01.Id;
@@ -41,13 +48,7 @@ import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.vsp.ers.consumption.ElectricRoadEnergyConsumption;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.google.inject.Inject;
 
 public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimInitializedListener {
 
@@ -55,8 +56,8 @@ public class ERSMobsimListener implements MobsimBeforeCleanupListener, MobsimIni
     @Inject
     public ERSMobsimListener(Config config) {
         this.config = config;
-        simStart = Math.max(0, config.qsim().getStartTime());
-        simEnd = Math.max(config.qsim().getEndTime(), 36 * 3600);
+        simStart = Math.max(0, config.qsim().getStartTime().seconds());
+        simEnd = Math.max(config.qsim().getEndTime().seconds(), 36 * 3600);
     }
 
     private static double BINSIZE = 3600;
