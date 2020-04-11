@@ -28,7 +28,6 @@ import org.matsim.contrib.ev.EvUnits;
 import org.matsim.contrib.ev.charging.FastThenSlowCharging;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
-import org.matsim.core.utils.misc.Time;
 import org.matsim.vsp.ers.stats.ERSLinkStats;
 
 public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
@@ -73,7 +72,7 @@ public class ElectricRoadEnergyConsumption implements DriveEnergyConsumption {
 			charge = Math.max(charge, ev.getBattery().getCapacity() - ev.getBattery().getSoc());
 			ev.getBattery().changeSoc(charge);
 
-			if (!Time.isUndefinedTime(linkEnterTime)) {
+			if (linkEnterTime == Double.NEGATIVE_INFINITY) {
 				((ERSLinkStats)link.getAttributes().getAttribute(ERSLinkStats.ERSLINKSTATS)).addEmmitedEnergyForVehicle(
 						linkEnterTime, charge, ev);
 			}
