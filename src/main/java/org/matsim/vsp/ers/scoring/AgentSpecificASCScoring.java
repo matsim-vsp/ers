@@ -31,6 +31,7 @@ import org.matsim.core.scoring.functions.CharyparNagelActivityScoring;
 import org.matsim.core.scoring.functions.CharyparNagelAgentStuckScoring;
 import org.matsim.core.scoring.functions.CharyparNagelLegScoring;
 import org.matsim.core.scoring.functions.CharyparNagelMoneyScoring;
+import org.matsim.core.scoring.functions.ModeUtilityParameters;
 import org.matsim.core.scoring.functions.ScoringParameters;
 
 public class AgentSpecificASCScoring implements ScoringFunctionFactory {
@@ -51,12 +52,14 @@ public class AgentSpecificASCScoring implements ScoringFunctionFactory {
 		// with the default MATSim scoring based on utility parameters in the config file.
 		ScoringParameters.Builder builder = new ScoringParameters.Builder(scenario, person);
 
-		Boolean metropolitanAgent = (Boolean)person.getAttributes().getAttribute("metropolitanRegion");
+
+		Boolean metropolitanAgent = (Boolean) person.getAttributes().getAttribute("metropolitanRegion");
 		if (metropolitanAgent != null) {
 			if (metropolitanAgent) {
-				double constant = scenario.getConfig().planCalcScore().getModes().get(TransportMode.car).getConstant()
-						* 1.5;
-				builder.getModeParameters(TransportMode.car).setDailyMoneyConstant(constant);
+				double constant = scenario.getConfig().planCalcScore().getModes().get(TransportMode.car).getConstant() * 1.5;
+				ModeUtilityParameters car = builder.getModeParameters(TransportMode.car);
+				ModeUtilityParameters params = new ModeUtilityParameters(car.marginalUtilityOfTraveling_s,car.marginalUtilityOfDistance_m,car.monetaryDistanceCostRate,constant,constant,car.dailyUtilityConstant);
+				builder.setModeParameters(TransportMode.car,params);
 			}
 		}
 
